@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LeafOS Packager 解包器</title>
+<style>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#10131b;color:#edf1fa}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(ellipse at 50% 0,#26304b,#10131b 65%)}
+main{width:min(680px,100%);padding:30px;border:1px solid #343d52;border-radius:22px;background:#191f2d;box-shadow:0 24px 80px #0008}
+h1{margin:0 0 8px;font-size:clamp(25px,5vw,36px)}p{color:#aeb9ce;line-height:1.65}
+.drop{display:block;margin:24px 0;padding:34px 20px;text-align:center;border:2px dashed #596783;border-radius:16px;background:#202a3b;cursor:pointer}
+.drop:hover{border-color:#9ab6ff;background:#26334a}input{display:none}
+button{border:0;border-radius:12px;padding:12px 18px;background:#86a9ff;color:#101827;font-weight:750;cursor:pointer}
+button:disabled{opacity:.45;cursor:wait}.status{min-height:48px;margin:18px 0 0;padding:12px;border-radius:12px;background:#111722;color:#c9d7f5;white-space:pre-wrap;overflow-wrap:anywhere}
+small{color:#8290a8}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<main>
+<h1>LeafOS Packager 解包器</h1>
+<p>尝试从 LeafOS Packager 生成的 HTML 或 ZIP 中提取原始 Scratch 项目数据（SB3）。文件只在本地浏览器处理，不会上传。</p>
+<label class="drop" for="file"><strong>选择或拖入打包文件</strong><br><small>支持 .html / .htm / .zip</small></label>
+<input id="file" type="file" accept=".html,.htm,.zip,application/zip,text/html">
+<div class="row"><button id="go" disabled>开始解包</button><small id="name">尚未选择文件</small></div>
+<div id="status" class="status" role="status">等待文件…</div>
+<p><small>说明：这是针对该项目当前版本格式的兼容性解包工具。它不能破解真正的密码学加密，也不能保证兼容所有第三方修改版。</small></p>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script>
+const fileInput=document.querySelector('#file'),go=document.querySelector('#go'),status=document.querySelector('#status'),nameEl=document.querySelector('#name');
+let selected=null;
+const say=(s)=>status.textContent=s;
+fileInput.addEventListener('change',()=>{selected=fileInput.files[0]||null;go.disabled=!selected;nameEl.textContent=selected?selected.name:'尚未选择文件';say(selected?'文件已就绪。':'等待文件…')});
+document.querySelector('.drop').addEventListener('dragover',e=>{e.preventDefault()});
+document.querySelector('.drop').addEventListener('drop',e=>{e.preventDefault();const f=e.dataTransfer.files[0];if(f){selected=f;go.disabled=false;nameEl.textContent=f.name;say('文件已就绪。')}});
+function getKey(html){const m=html.match(/(?:var|let|const)\s+zxKey\s*=\s*(\[[^\]]*\]|null)\s*;/);if(!m||m[1]==='null')return null;const a=JSON.parse(m[1]);if(!Array.isArray(a)||!a.length)throw Error('密钥格式不正确');return a.map(x=>Number(x)>>>0)}
+function step(s){s^=s<<13;s^=s>>>17;s^=s<<5;return s>>>0}
+function decrypt(bytes,key,index){if(!key)return bytes;let state=(key[0]^Math.imul(index+1,0x9e3779b1))>>>0;if(!state)state=0x6d2b79f5;const words=bytes.length>>>2;const view=new DataView(bytes.buffer,bytes.byteOffset,words*4);for(let i=0;i<words;i++){state=step(state);view.setUint32(i*4,view.getUint32(i*4,true)^state,true)}if(bytes.length>words*4){state=step(state);for(let i=words*4;i<bytes.length;i++){bytes[i]^=state&255;state>>>=8}}return bytes}
+function decode85(str,size){if(str.length%5!==0)throw Error('Base85 数据长度异常');const out=new Uint8Array(Math.ceil(size/4)*4),view=new DataView(out.buffer);for(let i=0,j=0;i<str.length;i+=5,j+=4){const v=c=>{let n=str.charCodeAt(c);if(n===40)n=60;if(n===41)n=62;return n-42};const n=v(i)+v(i+1)*85+v(i+2)*7225+v(i+3)*614125+v(i+4)*52200625;view.setUint32(j,n>>>0,true)}return out.subarray(0,size)}
+async function fromHtml(file){const html=await file.text(),key=getKey(html);const re=/<script\b(?=[^>]*\bdata="([^"]*)")[^>]*>\s*decodeChunk\((\d+)\s*,\s*(\d+)\)\s*<\/script>/g;let m,chunks=[];while((m=re.exec(html))!==null)chunks.push({data:m[1],size:Number(m[2]),index:Number(m[3])});if(!chunks.length)throw Error('没有找到打包器的项目数据块。');chunks.sort((a,b)=>a.index-b.index);const total=chunks.reduce((n,c)=>n+c.size,0),out=new Uint8Array(total);let offset=0;for(const c of chunks){const part=decode85(c.data,c.size);decrypt(part,key,c.index);out.set(part,offset);offset+=part.length}return out}
+async function fromZip(file){if(!window.JSZip)throw Error('ZIP 解压组件加载失败，请检查网络后重试。');const zip=await JSZip.loadAsync(file);const entry=zip.file('index.html')||Object.values(zip.files).find(x=>!x.dir&&x.name.endsWith('/index.html'));const data=zip.file('project.dat')||Object.values(zip.files).find(x=>!x.dir&&x.name.endsWith('/project.dat'));if(!entry||!data)throw Error('ZIP 中找不到 index.html 或 project.dat。');const html=await entry.async('string'),key=getKey(html),bytes=await data.async('uint8array');return decrypt(bytes,key,0)}
+go.addEventListener('click',async()=>{if(!selected)return;go.disabled=true;say('正在分析文件…');try{const ext=selected.name.toLowerCase().split('.').pop();let bytes;if(ext==='zip'||selected.type==='application/zip')bytes=await fromZip(selected);else bytes=await fromHtml(selected);if(bytes.length<8)throw Error('提取的数据过短，文件可能损坏。');const blob=new Blob([bytes],{type:'application/x.scratch.sb3'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=selected.name.replace(/\.(html?|zip)$/i,'')+'.sb3';a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);say('解包完成！已导出 '+a.download+'（'+(bytes.length/1024/1024).toFixed(2)+' MB）')}catch(e){say('解包失败：'+(e&&e.message||e))}finally{go.disabled=false}});
+</script>
+</body>
+</html>
