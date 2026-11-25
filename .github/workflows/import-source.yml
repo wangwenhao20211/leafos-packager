@@ -1,0 +1,74 @@
+name: Import source archive
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'leafos-packager-ready.zip'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: import-source
+  cancel-in-progress: false
+
+jobs:
+  import:
+    if: github.event_name == 'workflow_dispatch' || contains(github.event.head_commit.added, 'leafos-packager-ready.zip') || contains(github.event.head_commit.modified, 'leafos-packager-ready.zip')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: true
+
+      - name: Extract source archive
+        run: |
+          python3 - <<'PY'
+          import os
+          import pathlib
+          import zipfile
+
+          archive = pathlib.Path("leafos-packager-ready.zip")
+          if not archive.is_file():
+              raise SystemExit("Upload leafos-packager-ready.zip to the repository root first.")
+
+          root = pathlib.Path.cwd().resolve()
+          with zipfile.ZipFile(archive) as z:
+              for item in z.infolist():
+                  name = item.filename.replace("\\", "/")
+                  parts = pathlib.PurePosixPath(name).parts
+                  if not parts or name.startswith("/") or ".." in parts:
+                      raise SystemExit(f"Unsafe archive path: {item.filename}")
+                  target = (root / pathlib.Path(*parts)).resolve()
+                  if root not in target.parents and target != root:
+                      raise SystemExit(f"Unsafe archive path: {item.filename}")
+                  if item.is_dir() or name.endswith("/"):
+                      target.mkdir(parents=True, exist_ok=True)
+                  else:
+                      target.parent.mkdir(parents=True, exist_ok=True)
+                      with z.open(item) as source, target.open("wb") as output:
+                          output.write(source.read())
+
+          archive.unlink()
+          PY
+
+      - name: Commit imported source
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to import."
+            exit 0
+          fi
+          git commit -m "Import complete LeafOS Packager source"
+          git push origin HEAD:main
+
+      - name: Start Pages deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy.yml --ref main
