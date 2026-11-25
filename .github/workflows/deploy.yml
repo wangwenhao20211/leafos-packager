@@ -12,7 +12,6 @@ on:
       - 'static/**'
       - 'scratch-vm.tar.gz'
       - 'unpacker/**'
-      - '.github/workflows/deploy.yml'
 
 concurrency:
   group: pages
