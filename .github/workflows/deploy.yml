@@ -4,6 +4,15 @@ on:
   workflow_dispatch:
   push:
     branches: [main]
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'webpack.config.js'
+      - 'src/**'
+      - 'static/**'
+      - 'scratch-vm.tar.gz'
+      - 'unpacker/**'
+      - '.github/workflows/deploy.yml'
 
 concurrency:
   group: pages
