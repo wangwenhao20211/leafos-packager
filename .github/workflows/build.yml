@@ -3,8 +3,23 @@ name: Build
 on:
   push:
     branches: [main]
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'webpack.config.js'
+      - 'src/**'
+      - 'static/**'
+      - 'scratch-vm.tar.gz'
+      - '.github/workflows/build.yml'
   pull_request:
     branches: [main]
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'webpack.config.js'
+      - 'src/**'
+      - 'static/**'
+      - 'scratch-vm.tar.gz'
 
 permissions:
   contents: read
