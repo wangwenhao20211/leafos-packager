@@ -1,4 +1,4 @@
-name: Import source archive
+name: Import source archive and deploy
 
 on:
   push:
@@ -10,7 +10,8 @@ on:
 
 permissions:
   contents: write
-  actions: write
+  pages: write
+  id-token: write
 
 concurrency:
   group: import-source
@@ -42,6 +43,9 @@ jobs:
                   parts = pathlib.PurePosixPath(name).parts
                   if not parts or name.startswith("/") or ".." in parts:
                       raise SystemExit(f"Unsafe archive path: {item.filename}")
+                  # Keep this repository's deployment/import workflows intact.
+                  if len(parts) >= 2 and parts[0] == ".github" and parts[1] == "workflows":
+                      continue
                   target = (root / pathlib.Path(*parts)).resolve()
                   if root not in target.parents and target != root:
                       raise SystemExit(f"Unsafe archive path: {item.filename}")
@@ -67,7 +71,55 @@ jobs:
           git commit -m "Import complete LeafOS Packager source"
           git push origin HEAD:main
 
-      - name: Start Pages deployment
+  build:
+    needs: import
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout imported source
+        uses: actions/checkout@v6
+        with:
+          ref: main
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Test
+        run: npm test
+      - name: Build website
+        run: |
+          mkdir -p web
+          npm run build-prod
+          cp -r dist/* web/
         env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh workflow run deploy.yml --ref main
+          ENABLE_SERVICE_WORKER: "1"
+      - name: Build standalone
+        run: |
+          npm run build-standalone-prod
+          cp dist/standalone.html web/
+      - name: Add unpacker
+        run: |
+          mkdir -p web/unpacker
+          cp unpacker/index.html web/unpacker/index.html
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: web/
+
+  deploy:
+    needs: build
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      pages: write
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
