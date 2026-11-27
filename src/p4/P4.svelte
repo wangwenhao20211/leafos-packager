@@ -176,8 +176,8 @@
       <p class="third-party-notice">
         本打包器由
         <a href="https://space.bilibili.com/1196118574" target="_blank" rel="noopener noreferrer">zx34owo</a>
-        编写，wwhgames 仅提供部署服务，不对该打包器的安全性、稳定性及适用性作任何保证，
-        亦不对使用该打包器所造成的任何直接或间接后果承担责任。
+        编写，wwhgames 仅提供部署服务，不对该打包器生成的打包产物的安全性、稳定性及适用性作任何保证，
+        亦不对使用该打包器或其打包产物所造成的任何直接或间接后果承担责任。
         使用前请阅读 <a href="./terms-of-use.html" target="_blank" rel="noopener noreferrer">使用条款（Terms of Use）</a>。
       </p>
     </div>
