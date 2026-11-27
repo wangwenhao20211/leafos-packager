@@ -1,8 +1,29 @@
 <!doctype html>
 <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LeafOS Packager 解包器</title>
 <style>
-:root{color-scheme:dark;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#10131b;color:#edf1fa}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:radial-gradient(ellipse at 50% 0,#26304b,#10131b 65%)}main{width:min(680px,100%);padding:30px;border:1px solid #343d52;border-radius:22px;background:#191f2d;box-shadow:0 24px 80px #0008}h1{margin:0 0 8px;font-size:clamp(25px,5vw,36px)}p{color:#aeb9ce;line-height:1.65}.drop{display:block;margin:24px 0;padding:34px 20px;text-align:center;border:2px dashed #596783;border-radius:16px;background:#202a3b;cursor:pointer}.drop:hover{border-color:#9ab6ff;background:#26334a}input{display:none}button{border:0;border-radius:12px;padding:12px 18px;background:#86a9ff;color:#101827;font-weight:750;cursor:pointer}button:disabled{opacity:.45;cursor:wait}.status{min-height:48px;margin:18px 0 0;padding:12px;border-radius:12px;background:#111722;color:#c9d7f5;white-space:pre-wrap;overflow-wrap:anywhere}small{color:#8290a8}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-</style></head><body><main><h1>LeafOS Packager 解包器</h1><p>尝试从 LeafOS Packager 生成的 HTML 或 ZIP 中提取原始 Scratch 项目数据（SB3）。文件只在本地浏览器处理，不会上传。</p><label class="drop" for="file"><strong>选择或拖入打包文件</strong><br><small>支持 .html / .htm / .zip</small></label><input id="file" type="file" accept=".html,.htm,.zip,application/zip,text/html"><div class="row"><button id="go" disabled>开始解包</button><small id="name">尚未选择文件</small></div><div id="status" class="status" role="status">等待文件…</div><p><small>说明：这是针对该项目当前版本格式的兼容性解包工具。它不能破解真正的密码学加密，也不能保证兼容所有第三方修改版。</small></p></main>
+:root{color-scheme:dark;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#111827;color:#edf3ff;--accent:#14a0ff;--muted:#aab8cc}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% -15%,#263e61 0,#151e2e 48%,#101722 100%);padding:0 18px 36px}
+header{width:min(900px,100%);margin:0 auto;padding:24px 0 18px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.brand{font-size:18px;font-weight:800;letter-spacing:.2px}.brand span{color:var(--accent)}
+nav{display:flex;gap:10px;flex-wrap:wrap}
+nav a{color:#dceaff;text-decoration:none;border:1px solid #40536d;border-radius:7px;padding:8px 13px;font-size:14px}
+nav a:hover{border-color:var(--accent);background:#1b3550}
+main{width:min(760px,100%);margin:28px auto 0;padding:30px;border:1px solid #34445d;border-radius:12px;background:rgba(25,35,51,.96);box-shadow:0 18px 60px #0006}
+h1{margin:0 0 10px;font-size:clamp(26px,5vw,36px);letter-spacing:-.5px}
+p{color:var(--muted);line-height:1.7;margin:10px 0}
+.drop{display:block;margin:26px 0 18px;padding:42px 20px;text-align:center;border:2px dashed #526b8c;border-radius:9px;background:#1b2a3e;cursor:pointer;transition:.15s}
+.drop:hover{border-color:#65bdff;background:#203650}
+.drop strong{font-size:17px;color:#f1f6ff}.drop small{display:inline-block;margin-top:8px}
+input{display:none}
+button{border:0;border-radius:6px;padding:12px 20px;background:var(--accent);color:white;font-weight:750;font-size:14px;cursor:pointer;transition:filter .15s}
+button:hover:not(:disabled){filter:brightness(1.1)}
+button:disabled{opacity:.45;cursor:wait}
+.status{min-height:48px;margin:18px 0 0;padding:13px 15px;border:1px solid #2d4059;border-radius:7px;background:#111b29;color:#d4e5ff;white-space:pre-wrap;overflow-wrap:anywhere}
+small{color:#91a3bd}.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.note{margin-top:24px;padding:13px 15px;border-left:3px solid var(--accent);background:#172538;border-radius:0 6px 6px 0;font-size:13px}
+@media(max-width:560px){body{padding:0 12px 24px}header{padding-top:18px}main{margin-top:12px;padding:21px 17px}.drop{padding:32px 14px}}
+</style></head><body><header><div class="brand"><span>LeafOS</span> Packager</div><nav><a href="../">返回打包器</a><a href="../terms-of-use.html" target="_blank" rel="noopener noreferrer">使用条款</a></nav></header><main><h1>LeafOS 解包器</h1><p>从 LeafOS Packager 生成的 HTML 或 ZIP 文件中提取原始 Scratch 项目数据（SB3）。解包过程在当前浏览器本地完成，文件不会上传到服务器。</p><label class="drop" for="file"><strong>选择文件，或将打包文件拖到这里</strong><br><small>支持 HTML、HTM 和 ZIP 格式</small></label><input id="file" type="file" accept=".html,.htm,.zip,application/zip,text/html"><div class="row"><button id="go" disabled>开始解包</button><small id="name">尚未选择文件</small></div><div id="status" class="status" role="status">等待文件…</div><p class="note">兼容性说明：本工具针对 LeafOS Packager 当前格式设计，不保证兼容所有第三方修改版。它不能破解真正的密码学加密，也不能保证所有文件都能成功还原。</p></main>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script><script>
 const fileInput=document.querySelector('#file'),go=document.querySelector('#go'),status=document.querySelector('#status'),nameEl=document.querySelector('#name');let selected=null;const say=s=>status.textContent=s;
 fileInput.addEventListener('change',()=>{selected=fileInput.files[0]||null;go.disabled=!selected;nameEl.textContent=selected?selected.name:'尚未选择文件';say(selected?'文件已就绪。':'等待文件…')});document.querySelector('.drop').addEventListener('dragover',e=>e.preventDefault());document.querySelector('.drop').addEventListener('drop',e=>{e.preventDefault();const f=e.dataTransfer.files[0];if(f){selected=f;go.disabled=false;nameEl.textContent=f.name;say('文件已就绪。')}});
