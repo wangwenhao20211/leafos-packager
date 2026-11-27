@@ -46,10 +46,11 @@ jobs:
         run: |
           npm run build-standalone-prod
           cp dist/standalone.html web/
-      - name: Add unpacker
+      - name: Add unpacker and terms
         run: |
           mkdir -p web/unpacker
           cp unpacker/index.html web/unpacker/index.html
+          cp static/terms-of-use.html web/terms-of-use.html
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload Pages artifact
