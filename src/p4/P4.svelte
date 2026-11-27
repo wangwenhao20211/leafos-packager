@@ -128,6 +128,33 @@
   .version a {
     color: inherit;
   }
+  .tool-links {
+    margin: 20px 0 16px;
+  }
+  .tool-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 18px;
+    border-radius: 4px;
+    background: #14a0ff;
+    color: #fff !important;
+    font-weight: 700;
+    text-decoration: none;
+    transition: filter 120ms ease, transform 120ms ease;
+  }
+  .tool-link:hover {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+  }
+  .third-party-notice {
+    margin-top: 18px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(128, 128, 128, 0.28);
+    font-size: 0.88em;
+    line-height: 1.65;
+    opacity: 0.82;
+  }
 </style>
 
 <Modals bind:modalVisible={modalVisible} />
@@ -143,6 +170,16 @@
       {/if}
       <p>{$_('zx.intro1')}</p>
       <p>{$_('zx.intro2')}</p>
+      <div class="tool-links">
+        <a class="tool-link" href="./unpacker/">进入解包器</a>
+      </div>
+      <p class="third-party-notice">
+        本打包器由
+        <a href="https://space.bilibili.com/1196118574" target="_blank" rel="noopener noreferrer">zx34owo</a>
+        编写，wwhgames 仅提供部署服务，不对该打包器的安全性、稳定性及适用性作任何保证，
+        亦不对使用该打包器所造成的任何直接或间接后果承担责任。
+        使用前请阅读 <a href="./terms-of-use.html" target="_blank" rel="noopener noreferrer">使用条款（Terms of Use）</a>。
+      </p>
     </div>
   </Section>
 
