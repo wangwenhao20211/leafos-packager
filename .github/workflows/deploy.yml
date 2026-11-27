@@ -12,6 +12,7 @@ on:
       - 'static/**'
       - 'scratch-vm.tar.gz'
       - 'unpacker/**'
+      - 'terms-of-use.html'
 
 concurrency:
   group: pages
