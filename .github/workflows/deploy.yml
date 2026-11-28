@@ -51,6 +51,7 @@ jobs:
         run: |
           mkdir -p web/unpacker
           cp unpacker/index.html web/unpacker/index.html
+          cp unpacker/unpackager.js web/unpacker/unpackager.js
           cp static/terms-of-use.html web/terms-of-use.html
       - name: Configure Pages
         uses: actions/configure-pages@v5
