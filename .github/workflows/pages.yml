@@ -40,13 +40,19 @@ jobs:
         run: |
           npm run build-standalone-prod
           cp dist/standalone.html web/
-      - name: Add unpacker
+      - name: Add unpacker and terms
         run: |
-          mkdir -p web/unpacker
+          mkdir -p web/unpacker/dependencies
           cp unpacker/index.html web/unpacker/index.html
           cp unpacker/unpackager.js web/unpacker/unpackager.js
-      - name: Add custom domain
-        run: cp CNAME web/CNAME
+          cp unpacker/dependencies/jszip.min.js web/unpacker/dependencies/jszip.min.js
+          cp static/terms-of-use.html web/terms-of-use.html
+          cp CNAME web/CNAME
+          test -s web/unpacker/index.html
+          test -s web/unpacker/unpackager.js
+          test -s web/unpacker/dependencies/jszip.min.js
+          test -s web/terms-of-use.html
+          test -s web/CNAME
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload Pages artifact
