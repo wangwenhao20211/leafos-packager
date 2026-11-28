@@ -44,6 +44,7 @@ jobs:
         run: |
           mkdir -p web/unpacker
           cp unpacker/index.html web/unpacker/index.html
+          cp unpacker/unpackager.js web/unpacker/unpackager.js
       - name: Add custom domain
         run: cp CNAME web/CNAME
       - name: Configure Pages
