@@ -10,8 +10,8 @@
 
 ## 在线工具
 
-- 打包器：部署完成后访问站点首页
-- 解包器：`/unpacker/`
+- 打包器：[https://packager.wwhgames.cn/](https://packager.wwhgames.cn/)
+- 解包器：[https://packager.wwhgames.cn/unpacker/](https://packager.wwhgames.cn/unpacker/)
 
 解包器可尝试从本项目生成的 HTML 或 ZIP 中还原 SB3 项目。文件在浏览器本地处理，不会上传服务器。详细格式分析见 [解包格式说明](docs/UNPACKER.md)。
 
@@ -27,7 +27,7 @@ npm run build-standalone-prod
 
 ## GitHub Pages
 
-仓库使用 GitHub Actions 部署，触发分支为 `main`。请在仓库 Settings → Pages → Build and deployment 中将 Source 设为 GitHub Actions。
+仓库使用 GitHub Actions 部署，触发分支为 `main`。请在仓库 Settings → Pages → Build and deployment 中将 Source 设为 GitHub Actions。自定义域名配置为 `packager.wwhgames.cn`，部署工作流会将根目录的 `CNAME` 文件放入 Pages 发布产物。
 
 ## 来源与许可
 
